@@ -37,10 +37,10 @@ import {
   Mail,
   ChevronRight,
   X,
-  Facebook,
-  Twitter,
-  Instagram,
-  Globe,
+  Facebook, 
+  Twitter, 
+  Instagram, 
+  Globe, 
   ArrowRight,
   LayoutGrid,
   Heart,
@@ -50,15 +50,29 @@ import {
 } from 'lucide-react';
 
 // --- CONFIGURATION SAFETY GUARD ---
-// This prevents the "White Screen" if the environment variables are missing
-let firebaseConfig = {};
+// PASTE YOUR FIREBASE CONFIG OBJECT BELOW:
+let firebaseConfig = {
+  apiKey: "AIzaSyCi1eCrBtUvCVoyY9tX1gLiPeg2T5q7I-s",
+  authDomain: "fila-market.firebaseapp.com",
+  projectId: "fila-market",
+  storageBucket: "fila-market.firebasestorage.app",
+  messagingSenderId: "872863511065",
+  appId: "1:872863511065:web:b16660bdd43abcb93af088",
+  measurementId: "G-SDTER83330"
+}; 
+
 try {
-  firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+  // If the environment provides a config, use it; otherwise, use the one pasted above.
+  const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+  if (envConfig && Object.keys(firebaseConfig).length === 0) {
+    firebaseConfig = envConfig;
+  }
 } catch (e) {
   console.error("Firebase Config Parse Error:", e);
 }
 
-const app = firebaseConfig.apiKey ? initializeApp(firebaseConfig) : null;
+// Initialize Firebase only if config exists
+const app = (firebaseConfig && firebaseConfig.apiKey) ? initializeApp(firebaseConfig) : null;
 const auth = app ? getAuth(app) : null;
 const db = app ? getFirestore(app) : null;
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'fila-market';
@@ -83,7 +97,7 @@ export default function App() {
   // RULE 3: Auth Before Queries
   useEffect(() => {
     if (!auth || !db) {
-      setError("Firebase configuration is missing. Please check your environment setup.");
+      setError("Firebase configuration is missing. Please paste your config object into Line 48 of App.jsx.");
       setLoading(false);
       return;
     }
@@ -435,7 +449,7 @@ function PostProductView({ user, setView }) {
             {formData.category && CATEGORIES[formData.category].map(n => <option key={n} value={n}>{n}</option>)}
           </select>
         </div>
-        <input className="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" placeholder="Image URL" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+        <input className="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" placeholder="Image URL (e.g. https://images.unsplash.com/...)" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
         <input required className="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" placeholder="Phone" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
         <textarea required rows="4" className="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold resize-none" placeholder="Description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
         <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xl hover:bg-slate-900 transition shadow-lg">
@@ -449,7 +463,7 @@ function PostProductView({ user, setView }) {
 function AdminPanel({ products, userId }) {
   const deleteItem = async (id) => {
     if (!db) return;
-    if (confirm("Delete this listing?")) {
+    if (window.confirm("Delete this listing?")) {
       await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
     }
   };
