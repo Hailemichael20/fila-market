@@ -35,7 +35,11 @@ import {
   Image as ImageIcon,
   Mail,
   ChevronRight,
-  X
+  X,
+  Facebook,
+  Twitter,
+  Instagram,
+  Globe
 } from 'lucide-react';
 
 /* --- FIRESTORE SECURITY RULES ---
@@ -136,7 +140,7 @@ export default function App() {
   if (loading) return <div className="h-screen flex items-center justify-center bg-blue-50 text-blue-600 font-bold">Initializing Store...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 flex flex-col">
       {/* Navigation */}
       <nav className="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
@@ -170,7 +174,7 @@ export default function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+      <main className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex-1 w-full">
         {view === 'home' && (
           <HomeView 
             products={filteredProducts} 
@@ -183,6 +187,81 @@ export default function App() {
         {view === 'post' && <PostProductView user={user} setView={setView} />}
         {view === 'admin' && <AdminPanel products={products} userId={user?.uid} />}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t mt-20">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div className="col-span-1 md:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="bg-blue-600 p-1.5 rounded-md text-white">
+                  <ShoppingBag size={16} />
+                </div>
+                <h2 className="text-lg font-black tracking-tight text-slate-800">FILA MARKET</h2>
+              </div>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">
+                The most trusted community marketplace for quality clothing, electronics, and heavy machinery. Connect with verified sellers today.
+              </p>
+              <div className="flex gap-4">
+                <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-600 hover:text-white transition">
+                  <Facebook size={16} />
+                </button>
+                <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-blue-400 hover:text-white transition">
+                  <Twitter size={16} />
+                </button>
+                <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-pink-500 hover:text-white transition">
+                  <Instagram size={16} />
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">Categories</h3>
+              <ul className="space-y-3 text-sm font-medium text-slate-600">
+                {Object.keys(CATEGORIES).map(cat => (
+                  <li key={cat} className="hover:text-blue-600 cursor-pointer transition flex items-center gap-1 group">
+                    <ChevronRight size={14} className="text-slate-300 group-hover:translate-x-1 transition" />
+                    {cat}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">Support</h3>
+              <ul className="space-y-3 text-sm font-medium text-slate-600">
+                <li className="hover:text-blue-600 cursor-pointer transition">Safety Center</li>
+                <li className="hover:text-blue-600 cursor-pointer transition">Community Guidelines</li>
+                <li className="hover:text-blue-600 cursor-pointer transition">Seller Protection</li>
+                <li className="hover:text-blue-600 cursor-pointer transition">Report an Issue</li>
+              </ul>
+            </div>
+
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <h3 className="text-sm font-bold text-slate-800 mb-2">Sell your items fast</h3>
+              <p className="text-xs text-slate-500 mb-4">Post your products and reach verified buyers in your local area instantly.</p>
+              <button 
+                onClick={() => setView(user ? 'post' : 'login')}
+                className="w-full bg-white border border-slate-200 text-blue-600 font-bold py-2 rounded-xl text-xs hover:border-blue-200 hover:bg-blue-50 transition"
+              >
+                List Item Now
+              </button>
+            </div>
+          </div>
+
+          <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-slate-400">
+            <p>© 2024 FILA MARKET. All rights reserved.</p>
+            <div className="flex gap-6">
+              <span className="hover:text-slate-600 cursor-pointer transition">Privacy Policy</span>
+              <span className="hover:text-slate-600 cursor-pointer transition">Terms of Service</span>
+              <div className="flex items-center gap-1">
+                <Globe size={14} />
+                <span>English (US)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -190,57 +269,80 @@ export default function App() {
 function HomeView({ products, filters, setFilters }) {
   return (
     <div className="space-y-6">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-700 to-indigo-900 rounded-[2rem] p-8 md:p-12 mb-8 text-white shadow-2xl">
+        <div className="relative z-10 max-w-2xl">
+          <span className="inline-block bg-blue-500/30 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 border border-white/10">
+            Premium Community Marketplace
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 leading-tight">Find exactly what you need.</h2>
+          <p className="text-blue-100 text-lg mb-8 opacity-90 leading-relaxed">
+            A specialized platform for fashionistas, tech enthusiasts, and industrial professionals to trade with confidence.
+          </p>
+        </div>
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-[-20deg] translate-x-12 z-0"></div>
+      </div>
+
       {/* Search and Filters Bar */}
-      <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-4">
+      <div className="bg-white p-4 rounded-2xl border shadow-sm space-y-4 -mt-16 relative z-20 mx-2 md:mx-6">
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition" size={20} />
           <input 
             type="text" 
-            placeholder="Search products..." 
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+            placeholder="What are you looking for today?" 
+            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium"
             value={filters.search}
             onChange={(e) => setFilters({...filters, search: e.target.value})}
           />
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <select 
-            className="p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-medium focus:ring-2 focus:ring-blue-500"
-            value={filters.category}
-            onChange={(e) => setFilters({...filters, category: e.target.value, niche: ''})}
-          >
-            <option value="">All Categories</option>
-            {Object.keys(CATEGORIES).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-          </select>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Category</label>
+            <select 
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold focus:ring-2 focus:ring-blue-500 appearance-none"
+              value={filters.category}
+              onChange={(e) => setFilters({...filters, category: e.target.value, niche: ''})}
+            >
+              <option value="">All Categories</option>
+              {Object.keys(CATEGORIES).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+          </div>
 
-          <select 
-            className="p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-medium focus:ring-2 focus:ring-blue-500"
-            disabled={!filters.category}
-            value={filters.niche}
-            onChange={(e) => setFilters({...filters, niche: e.target.value})}
-          >
-            <option value="">All Niches</option>
-            {filters.category && CATEGORIES[filters.category].map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Niche</label>
+            <select 
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold focus:ring-2 focus:ring-blue-500 disabled:opacity-50 appearance-none"
+              disabled={!filters.category}
+              value={filters.niche}
+              onChange={(e) => setFilters({...filters, niche: e.target.value})}
+            >
+              <option value="">All Niches</option>
+              {filters.category && CATEGORIES[filters.category].map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
 
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Location..." 
-              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm focus:ring-2 focus:ring-blue-500"
-              value={filters.location}
-              onChange={(e) => setFilters({...filters, location: e.target.value})}
-            />
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Location</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search location..." 
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-bold focus:ring-2 focus:ring-blue-500"
+                value={filters.location}
+                onChange={(e) => setFilters({...filters, location: e.target.value})}
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-6">
         {products.map(product => (
-          <div key={product.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
-            <div className="aspect-square bg-slate-100 relative overflow-hidden group">
+          <div key={product.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group">
+            <div className="aspect-square bg-slate-100 relative overflow-hidden">
               {product.imageUrl ? (
                 <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" onError={(e) => e.target.src = "https://placehold.co/400?text=No+Image"} />
               ) : (
@@ -258,7 +360,7 @@ function HomeView({ products, filters, setFilters }) {
             
             <div className="p-4 flex flex-col flex-1">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-slate-800 line-clamp-1">{product.name}</h3>
+                <h3 className="font-bold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition">{product.name}</h3>
                 <span className="text-blue-600 font-black text-lg">${product.price}</span>
               </div>
               
@@ -287,12 +389,12 @@ function HomeView({ products, filters, setFilters }) {
       </div>
       
       {products.length === 0 && (
-        <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
-          <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-            <Search size={40} />
+        <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
+          <div className="bg-slate-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+            <Search size={48} />
           </div>
-          <h3 className="text-xl font-bold text-slate-400 uppercase tracking-widest">No matching items</h3>
-          <p className="text-slate-400 text-sm">Try adjusting your filters or search terms.</p>
+          <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest">No results found</h3>
+          <p className="text-slate-400 text-sm max-w-xs mx-auto">Try broadening your search or choosing a different category.</p>
         </div>
       )}
     </div>
@@ -328,7 +430,7 @@ function AuthForm({ type, setView }) {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-6 bg-white p-8 rounded-3xl shadow-2xl shadow-blue-100 border border-blue-50 relative overflow-hidden">
+    <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded-3xl shadow-2xl shadow-blue-100 border border-blue-50 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 z-0 opacity-50"></div>
       
       <div className="relative z-10">
@@ -407,25 +509,25 @@ function PostProductView({ user, setView }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400 ml-1">Product Title</label>
-            <input required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. MacBook Pro 2023" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+            <input required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="e.g. MacBook Pro 2023" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
           </div>
           <div className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400 ml-1">Price ($)</label>
-            <input type="number" required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="0" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
+            <input type="number" required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="0" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400 ml-1">Category</label>
-            <select required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value, niche: ''})}>
+            <select required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value, niche: ''})}>
               <option value="">Select Category</option>
               {Object.keys(CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400 ml-1">Niche</label>
-            <select required disabled={!formData.category} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" value={formData.niche} onChange={e => setFormData({...formData, niche: e.target.value})}>
+            <select required disabled={!formData.category} className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" value={formData.niche} onChange={e => setFormData({...formData, niche: e.target.value})}>
               <option value="">Select Niche</option>
               {formData.category && CATEGORIES[formData.category].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
@@ -435,11 +537,11 @@ function PostProductView({ user, setView }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400 ml-1 text-blue-600">Contact Number</label>
-            <input type="tel" required className="w-full p-4 bg-blue-50 border-blue-100 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="+1 234..." value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+            <input type="tel" required className="w-full p-4 bg-blue-50 border-blue-100 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="+1 234..." value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
           </div>
           <div className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400 ml-1">Location</label>
-            <input required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="City, State" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+            <input required className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="City, State" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
           </div>
         </div>
 
@@ -447,13 +549,13 @@ function PostProductView({ user, setView }) {
           <label className="text-xs font-black uppercase text-slate-400 ml-1">Product Image URL</label>
           <div className="relative">
             <ImageIcon size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input className="w-full pl-12 p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://image.url/photo.jpg" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
+            <input className="w-full pl-12 p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="https://image.url/photo.jpg" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} />
           </div>
         </div>
 
         <div className="space-y-2">
           <label className="text-xs font-black uppercase text-slate-400 ml-1">Description</label>
-          <textarea required rows="4" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Describe the condition, features, etc." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+          <textarea required rows="4" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" placeholder="Describe the condition, features, etc." value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
         </div>
 
         <label className="flex items-center gap-3 cursor-pointer group">
@@ -462,7 +564,7 @@ function PostProductView({ user, setView }) {
             <div className={`w-12 h-6 rounded-full transition ${formData.showEmail ? 'bg-blue-600' : 'bg-slate-200'}`}></div>
             <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition transform ${formData.showEmail ? 'translate-x-6' : ''}`}></div>
           </div>
-          <span className="text-sm font-bold text-slate-600">Show my email to buyers (Optional)</span>
+          <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition">Show my email to buyers (Optional)</span>
         </label>
 
         <div className="flex flex-col sm:flex-row gap-4 pt-6">
