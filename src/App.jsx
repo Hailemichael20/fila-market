@@ -21,8 +21,27 @@ import {
 } from 'firebase/firestore';
 import { Package, User, LogOut, PlusCircle, Phone, Trash2, ShieldCheck, ShoppingBag } from 'lucide-react';
 
+/* --- FIRESTORE SECURITY RULES ---
+  Copy and paste these into the "Rules" tab of your Firestore Console:
+
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /artifacts/fila-market/public/data/products/{productId} {
+        allow read: if true;
+        allow create: if request.auth != null;
+        allow delete: if request.auth != null && 
+          (get(/databases/$(database)/documents/artifacts/fila-market/users/$(request.auth.uid)).data.role == 'admin');
+      }
+      match /artifacts/fila-market/users/{userId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+*/
+
 // --- CONFIGURATION ---
-// Replace this with your actual Firebase config from the Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyCi1eCrBtUvCVoyY9tX1gLiPeg2T5q7I-s",
   authDomain: "fila-market.firebaseapp.com",
@@ -36,7 +55,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-store-app';
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'fila-market';
 
 export default function App() {
   const [user, setUser] = useState(null);
