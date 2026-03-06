@@ -49,11 +49,18 @@ import {
   CloudUpload
 } from 'lucide-react';
 
-// --- CONFIGURATION ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// --- CONFIGURATION SAFETY GUARD ---
+// This prevents the "White Screen" if the environment variables are missing
+let firebaseConfig = {};
+try {
+  firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+} catch (e) {
+  console.error("Firebase Config Parse Error:", e);
+}
+
+const app = firebaseConfig.apiKey ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'fila-market';
 
 // --- DATA CONSTANTS ---
@@ -69,11 +76,18 @@ export default function App() {
   const [view, setView] = useState('home'); 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ category: '', niche: '', location: '', search: '' });
   const [isPushing, setIsPushing] = useState(false);
 
   // RULE 3: Auth Before Queries
   useEffect(() => {
+    if (!auth || !db) {
+      setError("Firebase configuration is missing. Please check your environment setup.");
+      setLoading(false);
+      return;
+    }
+
     const initAuth = async () => {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -90,7 +104,6 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Only attempt to fetch/set user data once we have a UID
         const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'info');
         try {
           const userDoc = await getDoc(userDocRef);
@@ -114,16 +127,14 @@ export default function App() {
 
   // RULE 2 & 3: Fetch products only after auth
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
 
-    // Use specific path from RULE 1
     const productCol = collection(db, 'artifacts', appId, 'public', 'data', 'products');
     const q = query(productCol);
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const items = [];
       snapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
-      // Sort in JS to avoid index requirement (RULE 2)
       setProducts(items.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
     }, (err) => {
       console.error("Firestore Permission/Query Error:", err);
@@ -132,20 +143,16 @@ export default function App() {
     return () => unsubscribe();
   }, [user]);
 
-  // --- PUSH COMMAND IMPLEMENTATION ---
   const handlePushToCloud = async () => {
-    if (!user) return;
+    if (!user || !db) return;
     setIsPushing(true);
     try {
-      // Logic for a global "Push" usually involves syncing local state or triggering a refresh
-      // Here we simulate a sync of user preferences or current view state to the cloud
       const syncRef = doc(db, 'artifacts', appId, 'users', user.uid, 'sync', 'last_state');
       await setDoc(syncRef, {
         lastView: view,
         timestamp: serverTimestamp(),
         filters: filters
       });
-      console.log("Push successful: State synced to cloud.");
     } catch (err) {
       console.error("Push failed:", err);
     } finally {
@@ -153,12 +160,22 @@ export default function App() {
     }
   };
 
-  const handleSignOut = () => signOut(auth).then(() => setView('home'));
+  const handleSignOut = () => auth && signOut(auth).then(() => setView('home'));
 
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-white">
       <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-slate-400 font-bold tracking-widest animate-pulse">FILA MARKET</p>
+      <p className="text-slate-400 font-bold tracking-widest animate-pulse font-sans">FILA MARKET</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="h-screen flex flex-col items-center justify-center bg-white px-8 text-center">
+      <div className="bg-red-50 p-6 rounded-3xl border border-red-100 max-w-md">
+        <h2 className="text-red-600 font-black text-xl mb-2">Setup Required</h2>
+        <p className="text-slate-600 font-medium mb-4">{error}</p>
+        <button onClick={() => window.location.reload()} className="bg-red-600 text-white px-6 py-2 rounded-xl font-bold">Retry</button>
+      </div>
     </div>
   );
 
@@ -186,7 +203,6 @@ export default function App() {
         </div>
 
         <div className="flex gap-4 items-center">
-          {/* Push Button */}
           {user && (
             <button 
               onClick={handlePushToCloud}
@@ -346,6 +362,7 @@ function AuthForm({ type, setView }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!auth || !db) return;
     try {
       if (type === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
@@ -386,6 +403,7 @@ function PostProductView({ user, setView }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!db) return;
     setLoading(true);
     try {
       await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'products'), {
@@ -430,6 +448,7 @@ function PostProductView({ user, setView }) {
 
 function AdminPanel({ products, userId }) {
   const deleteItem = async (id) => {
+    if (!db) return;
     if (confirm("Delete this listing?")) {
       await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'products', id));
     }
